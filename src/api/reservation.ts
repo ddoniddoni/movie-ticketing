@@ -1,8 +1,9 @@
 import axios from "axios";
 
-export interface ReservationParams {
-  seat_number: string;
-  // isReserved: boolean;
+interface ReservationData {
+  userId: string;
+  scheduleId: number;
+  seatNumber: number;
 }
 
 export interface GetSeatsParams {
@@ -24,11 +25,8 @@ export const getSeat = async (params: GetSeatsParams) => {
   return data;
 };
 
-export const updateReservationStatus = async (reservationData: any) => {
-  const { data } = await axios.put(
-    "http://localhost:4000/api/reservations/reserve",
-    reservationData
-  );
+export const reserveSeat = async (reservationData: ReservationData) => {
+  const { data } = await axios.post("/reserve", reservationData);
   return data;
 };
 
