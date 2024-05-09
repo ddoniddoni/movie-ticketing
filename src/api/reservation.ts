@@ -5,9 +5,21 @@ export interface ReservationParams {
   // isReserved: boolean;
 }
 
-export const getSeat = async () => {
+export interface GetSeatsParams {
+  scheduleId: number;
+  theaterId: number;
+}
+
+export const getSeat = async (params: GetSeatsParams) => {
+  const { scheduleId, theaterId } = params;
   const { data } = await axios.get(
-    "http://localhost:4000/api/reservations/seat"
+    "http://localhost:4000/api/reservations/seat",
+    {
+      params: {
+        schedule_id: scheduleId,
+        theater_id: theaterId,
+      },
+    }
   );
   return data;
 };
@@ -26,3 +38,5 @@ export const getMovieAndDate = async (movieId: string | undefined) => {
   );
   return data;
 };
+
+// export const reserveSeat = async ()

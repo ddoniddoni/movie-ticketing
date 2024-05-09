@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { MovieScreen } from "../../components/movieScreen";
-import { Modal } from "../../components/modal";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  getMovieAndDate,
-  getSeat,
-  updateReservationStatus,
-} from "../../api/reservation";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getMovieAndDate, getSeat, reserveSeat } from "../../api/reservation";
 import { useParams } from "react-router-dom";
+import {
+  ButtonContainer,
+  Cancel,
+  CloseButton,
+  Interaction,
+  ModalBackdrop,
+  ModalView,
+  Reserve,
+  TextContainer,
+} from "../../components/reservation-modal";
+import { useUserStore } from "../../store/userStore";
 
 const formDate = (date: Date) => {
   const temp = new Date(date);
@@ -21,11 +26,9 @@ const formDate = (date: Date) => {
 };
 
 interface ISeat {
-  isReserved: boolean;
-  reserve_date: string;
-  reserve_name: string;
-  seat_number: string;
-  status: string;
+  seat_id: number;
+  seat_number: number;
+  reservation_status: string;
 }
 
 interface Schedule {
@@ -34,81 +37,149 @@ interface Schedule {
   start_time: string;
   theater_location: string;
   theater_name: string;
+  theater_id: number;
+  schedule_id: number;
 }
 
 export const ReservationPage = () => {
   const movieId = useParams().id;
-  const [schedule, setSchedule] = useState<Schedule[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [movieName, setMovieName] = useState("");
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
+    null
+  );
+  const [seats, setSeats] = useState<ISeat[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedSeat, setSelectedSeat] = useState<ISeat>();
+
+  const { mutate: reserveMutate, isPending } = useMutation({
+    mutationFn: (test: any) => reserveSeat(test),
+    onSuccess: () => {
+      alert("예약을 진행합니다. 5분안에 예약하셔야 합니다.");
+    },
+    onError: (error: Error) => {
+      alert(error);
+    },
+  });
 
   const { data: scheduleData } = useQuery({
     queryKey: ["searchMovieAndDate", movieId],
     queryFn: () => getMovieAndDate(movieId),
   });
 
+  const { data: seatsData } = useQuery({
+    queryKey: [
+      "getSeats",
+      selectedSchedule?.schedule_id,
+      selectedSchedule?.theater_id,
+    ],
+    queryFn: () =>
+      getSeat({
+        scheduleId: selectedSchedule!.schedule_id,
+        theaterId: selectedSchedule!.theater_id,
+      }),
+    enabled: !!selectedSchedule,
+  });
+
   useEffect(() => {
     if (scheduleData) {
-      setSchedule(scheduleData);
+      setSchedules(scheduleData);
       setMovieName(scheduleData[0].movie_title);
     }
   }, [scheduleData]);
-  // const queryClient = useQueryClient();
-  // const [seats, setSeats] = useState<ISeat[]>([]);
-  // const [showModal, setShowModal] = useState(false);
-  // const [selectedSeat, setSelectedSeat] = useState({});
 
-  // const mutation = useMutation({
-  //   mutationFn: updateReservationStatus,
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ["seat"] });
-  //   },
-  // });
+  useEffect(() => {
+    if (seatsData) {
+      setSeats(seatsData);
+    }
+    console.log(seats);
+  }, [seatsData]);
 
-  // const handleReservationUpdate = () => {
-  //   mutation.mutate({ seat_number: "1A", isReserved: true });
-  // };
+  const handleTheaterClick = (schedule: Schedule) => {
+    setSelectedSchedule(schedule);
+  };
 
-  // const { data: seatData } = useQuery({
-  // queryKey: ["seat"],
-  // queryFn: () => getSeat(),
-  // refetchOnWindowFocus: false,
-  // });
-
-  // useEffect(() => {
-  // if (seatData) {
-  // setSeats(seatData);
-  // }
-  // }, [seatData]);
-
-  // const toggleSeatSelection = (seat: any) => {
-  // const updatedSeats = seats.map((seat) =>
-  //   seat.seat_number === seat_number
-  //     ? { ...seat, isReserved: !seat.isReserved }
-  //     : seat
-  // );
-  // setSeats(updatedSeats);
-  // setSelectedSeat(seat);
-  // setShowModal(true);
-  // };
-
-  // const onConfirm = (confirm: any) => {
-  //   mutation.mutate({ seat_number: "2", isReserved: 0 });
-  //   setShowModal(false);
-  // };
+  const toggleSeatSelection = (seat: ISeat) => {
+    // const updatedSeats = seats.map((seat) =>
+    //   seat.seat_number === seat_number
+    //     ? { ...seat, isReserved: !seat.isReserved }
+    //     : seat
+    // );
+    setSelectedSeat(seat);
+    setShowModal(true);
+  };
+  const onReserveClick = (seat: ISeat | undefined) => {
+    const reservationData = {
+      userId: useUserStore.getState().user,
+      scheduledId: selectedSchedule?.schedule_id,
+      seatNumber: seat?.seat_number,
+    };
+    reserveMutate(reservationData);
+  };
 
   return (
-    <Container>
-      <Title>{movieName}</Title>
-      <ScheduleWrapper>
-        {schedule.map((s, index) => (
-          <Theater key={index}>
-            <h1>{s.theater_location}</h1>
-            <h2>{formDate(s.screening_date)}</h2>
-            <p>{s.start_time.replace(/:\d{2}$/, "")}</p>
-          </Theater>
-        ))}
-      </ScheduleWrapper>
-    </Container>
+    <>
+      <Container>
+        <Title>{movieName}</Title>
+        <ScheduleWrapper>
+          {schedules.map((schedule, index) => (
+            <Theater onClick={() => handleTheaterClick(schedule)} key={index}>
+              <h1>{schedule.theater_location}</h1>
+              <h2>{formDate(schedule.screening_date)}</h2>
+              <p>{schedule.start_time.replace(/:\d{2}$/, "")}</p>
+            </Theater>
+          ))}
+        </ScheduleWrapper>
+        <SeatContainer>
+          {seats.map((seat) => (
+            <Seat
+              key={seat.seat_id}
+              $SeatProps={seat.reservation_status}
+              onClick={() => toggleSeatSelection(seat)}
+            >
+              {seat.seat_number}
+            </Seat>
+          ))}
+        </SeatContainer>
+      </Container>
+      {showModal && (
+        <ModalBackdrop onClick={() => setShowModal(false)}>
+          <ModalView onClick={(e) => e.stopPropagation()}>
+            <ButtonContainer>
+              <CloseButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowModal(false);
+                }}
+              >
+                &times;
+              </CloseButton>
+            </ButtonContainer>
+            <TextContainer>
+              {selectedSeat?.seat_number}번 자리를 예약하시겠습니까?
+            </TextContainer>
+            <Interaction>
+              <Reserve
+                value="reserve"
+                onClick={() => onReserveClick(selectedSeat)}
+                disabled={isPending}
+              >
+                예약
+              </Reserve>
+              <Cancel
+                value="cancel"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowModal(false);
+                }}
+              >
+                취소
+              </Cancel>
+            </Interaction>
+          </ModalView>
+        </ModalBackdrop>
+      )}
+    </>
   );
 };
 {
@@ -153,7 +224,9 @@ const Theater = styled.div`
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background-color: aqua;
+  background-color: #d82341;
+  border-radius: 15px;
+  cursor: pointer;
   h1 {
     font-size: 24px;
     font-weight: 700;
@@ -168,6 +241,9 @@ const Theater = styled.div`
     font-size: 20px;
     font-weight: 600;
   }
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const ScheduleWrapper = styled.div`
@@ -178,6 +254,7 @@ const ScheduleWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-around;
+  margin-top: 20px;
 `;
 
 const SeatContainer = styled.div`
@@ -188,11 +265,12 @@ const SeatContainer = styled.div`
   height: 300px;
 `;
 
-const Seat = styled.div<{ $SeatProps?: boolean }>`
+const Seat = styled.div<{ $SeatProps?: string }>`
   width: 50px;
   height: 50px;
   margin: 5px;
-  background-color: ${(props) => (props.$SeatProps ? "lightgreen" : "tomato")};
+  background-color: ${(props) =>
+    props.$SeatProps === "A" ? "lightgreen" : "tomato"};
   font-size: 14px;
   display: flex;
   align-items: center;

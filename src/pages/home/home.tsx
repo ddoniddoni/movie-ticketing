@@ -3,7 +3,6 @@ import { getMovies } from "../../api/movie";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { MovieCard } from "../../components/movie-card";
-import { useUserStore } from "../../store/userStore";
 
 export const Home = () => {
   const [movies, setMovies] = useState([]);
