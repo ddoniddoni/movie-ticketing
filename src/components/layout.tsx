@@ -1,16 +1,17 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { useThemeStore } from "../store/themeStore";
 import { useTokenStore, useUserStore } from "../store/userStore";
 
 export const Layout = () => {
   const { toggleTheme, theme } = useThemeStore();
+  const { user, logout } = useUserStore();
   const navigate = useNavigate();
   const onLogOut = async () => {
     const ok = confirm("정말 로그아웃 하시겠습니까?");
     if (ok) {
       useTokenStore.getState().clearToken();
-      useUserStore.getState().logout();
+      logout();
       // localStorage.removeItem("login-token");
       navigate("/login");
     }
@@ -18,6 +19,8 @@ export const Layout = () => {
   return (
     <Container>
       <Wrapper>
+        <HomeButton to={"/"}>Home</HomeButton>
+        <MyPageButton to={`/my-page/${user}`}>MyPage</MyPageButton>
         <ThemeButton onClick={toggleTheme}>
           {theme === "Light" ? "Dark" : "Light"}
         </ThemeButton>
@@ -47,6 +50,50 @@ const Wrapper = styled.div`
   width: 1240px;
   background-color: ${(props) => props.theme.background};
   color: ${(props) => props.theme.color};
+`;
+
+const HomeButton = styled(Link)`
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  right: 40px;
+  bottom: 280px;
+  border-radius: 50%;
+  border: none;
+  background-color: ${(props) => props.theme.color};
+  color: ${(props) => props.theme.background};
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const MyPageButton = styled(Link)`
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  right: 40px;
+  bottom: 200px;
+  border-radius: 50%;
+  border: none;
+  background-color: ${(props) => props.theme.color};
+  color: ${(props) => props.theme.background};
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
 const ThemeButton = styled.button`

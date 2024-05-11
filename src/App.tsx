@@ -13,6 +13,8 @@ import { Home } from "./pages/home/home";
 import { ProtectedRoute } from "./components/protected-route";
 import { Layout } from "./components/layout";
 import { MovieDetail } from "./pages/detail/movie-detail";
+import { Payment } from "./pages/payment/payment";
+import { MyPage } from "./pages/my-page/myPage";
 
 const router = createBrowserRouter([
   {
@@ -28,12 +30,20 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: "/my-page/:id",
+        element: <MyPage />,
+      },
+      {
         path: "/reserve/:id",
         element: <ReservationPage />,
       },
       {
         path: "/movie/:id",
         element: <MovieDetail />,
+      },
+      {
+        path: "/payment",
+        element: <Payment />,
       },
     ],
   },

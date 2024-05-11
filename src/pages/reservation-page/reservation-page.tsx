@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getMovieAndDate, getSeat, reserveSeat } from "../../api/reservation";
-import { useParams } from "react-router-dom";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
+  ReservationData,
+  getMovieAndDate,
+  getSeat,
+  reserveSeat,
+} from "../../api/reservation";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ButtonContainer,
   Cancel,
@@ -42,6 +52,8 @@ interface Schedule {
 }
 
 export const ReservationPage = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const movieId = useParams().id;
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [movieName, setMovieName] = useState("");
@@ -53,12 +65,16 @@ export const ReservationPage = () => {
   const [selectedSeat, setSelectedSeat] = useState<ISeat>();
 
   const { mutate: reserveMutate, isPending } = useMutation({
-    mutationFn: (test: any) => reserveSeat(test),
-    onSuccess: () => {
-      alert("예약을 진행합니다. 5분안에 예약하셔야 합니다.");
+    mutationFn: (reservationData: ReservationData) =>
+      reserveSeat(reservationData),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["getSeats"] });
+      setShowModal(false);
+      alert(data["message"]);
+      navigate("/payment");
     },
-    onError: (error: Error) => {
-      alert(error);
+    onError: (data) => {
+      alert(data["message"]);
     },
   });
 
@@ -111,7 +127,7 @@ export const ReservationPage = () => {
   const onReserveClick = (seat: ISeat | undefined) => {
     const reservationData = {
       userId: useUserStore.getState().user,
-      scheduledId: selectedSchedule?.schedule_id,
+      scheduleId: selectedSchedule?.schedule_id,
       seatNumber: seat?.seat_number,
     };
     reserveMutate(reservationData);
@@ -270,7 +286,11 @@ const Seat = styled.div<{ $SeatProps?: string }>`
   height: 50px;
   margin: 5px;
   background-color: ${(props) =>
-    props.$SeatProps === "A" ? "lightgreen" : "tomato"};
+    props.$SeatProps === "A"
+      ? "lightgreen"
+      : props.$SeatProps === "P"
+      ? "tomato"
+      : "gray"};
   font-size: 14px;
   display: flex;
   align-items: center;

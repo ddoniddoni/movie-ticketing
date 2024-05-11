@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Movie, getMovieFindById } from "../../api/movie";
 import styled from "styled-components";
-import { getMovieAndDate } from "../../api/reservation";
 
 export const MovieDetail = () => {
   const id = useParams().id;
@@ -12,7 +11,6 @@ export const MovieDetail = () => {
   const { data: movieData } = useQuery({
     queryKey: ["findByIdAndMovie", id],
     queryFn: () => getMovieFindById(id),
-    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
