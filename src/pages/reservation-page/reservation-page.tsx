@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import {
-  QueryClient,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ReservationData,
   getMovieAndDate,
@@ -25,7 +20,7 @@ import {
 } from "../../components/reservation-modal";
 import { useUserStore } from "../../store/userStore";
 
-const formDate = (date: Date) => {
+export const formDate = (date: Date) => {
   const temp = new Date(date);
   const year = temp.getFullYear();
   // getMonth()는 0부터 시작하므로 1을 더해줍니다.
@@ -102,6 +97,7 @@ export const ReservationPage = () => {
       setSchedules(scheduleData);
       setMovieName(scheduleData[0].movie_title);
     }
+    console.log(scheduleData);
   }, [scheduleData]);
 
   useEffect(() => {
@@ -115,12 +111,8 @@ export const ReservationPage = () => {
     setSelectedSchedule(schedule);
   };
 
-  const toggleSeatSelection = (seat: ISeat) => {
-    // const updatedSeats = seats.map((seat) =>
-    //   seat.seat_number === seat_number
-    //     ? { ...seat, isReserved: !seat.isReserved }
-    //     : seat
-    // );
+  const toggleSeat = (seat: ISeat) => {
+    console.log(seat);
     setSelectedSeat(seat);
     setShowModal(true);
   };
@@ -151,7 +143,7 @@ export const ReservationPage = () => {
             <Seat
               key={seat.seat_id}
               $SeatProps={seat.reservation_status}
-              onClick={() => toggleSeatSelection(seat)}
+              onClick={() => toggleSeat(seat)}
             >
               {seat.seat_number}
             </Seat>
