@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Movie, getMovieFindById } from "../../api/movie";
 import styled from "styled-components";
+import { Loading } from "../../components/loading";
 
 export const MovieDetail = () => {
   const id = useParams().id;
@@ -18,7 +19,9 @@ export const MovieDetail = () => {
       setMovie(movieData);
     }
   }, [movieData]);
-
+  if (!movie) {
+    return <Loading />;
+  }
   return (
     <>
       <Container>

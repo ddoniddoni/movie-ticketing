@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useUserStore } from "../../store/userStore";
 import { useQuery } from "@tanstack/react-query";
-import { getUsetReserveData } from "../../api/profile";
+import { getUserReserveData } from "../../api/profile";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode.react";
 import { formDate } from "../reservation-page/reservation-page";
@@ -20,7 +20,7 @@ export const MyPage = () => {
 
   const { data: reserveData } = useQuery({
     queryKey: ["userReserveData", user],
-    queryFn: () => getUsetReserveData(user),
+    queryFn: () => getUserReserveData(user),
   });
 
   useEffect(() => {
@@ -28,27 +28,30 @@ export const MyPage = () => {
       setReserveData(reserveData);
     }
   }, [reserveData]);
-  console.log(userReserveData);
   return (
     <Container>
       <Title>예약 내역</Title>
-      {userReserveData.map((data, index) => (
-        <ReserveContainer key={index}>
-          <QRcodeContainer>
-            <QRCode
-              value={JSON.stringify({ 영화제목: data.title })}
-              style={{ width: "100%", height: "100%" }}
-            />
-          </QRcodeContainer>
-          <Des>
-            <h1>영화 : {data.title}</h1>
-            <h2>상영날짜 : {formDate(data.screening_date)}</h2>
-            <h2>상영시간 : {data.start_time.substring(0, 5)}</h2>
-            <h2>상영관 : {data.name}</h2>
-            <h2>좌석 : {data.seat_number}번</h2>
-          </Des>
-        </ReserveContainer>
-      ))}
+      {userReserveData.length > 0 ? (
+        userReserveData.map((data, index) => (
+          <ReserveContainer key={index}>
+            <QRcodeContainer>
+              <QRCode
+                value={JSON.stringify({ 영화제목: data.title })}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </QRcodeContainer>
+            <Des>
+              <h1>영화 : {data.title}</h1>
+              <h2>상영날짜 : {formDate(data.screening_date)}</h2>
+              <h2>상영시간 : {data.start_time.substring(0, 5)}</h2>
+              <h2>상영관 : {data.name}</h2>
+              <h2>좌석 : {data.seat_number}번</h2>
+            </Des>
+          </ReserveContainer>
+        ))
+      ) : (
+        <h1 style={{ marginTop: "20px" }}>예약 내역이 없습니다.</h1>
+      )}
     </Container>
   );
 };
