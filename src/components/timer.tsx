@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getTimer } from "../api/timer";
+import { useNavigate } from "react-router-dom";
 
 interface Timer {
   currentTime: Date;
 }
 
 export const Timer = () => {
+  const navigate = useNavigate();
   const [startTime, setStartTime] = useState<number>(() => {
     const storedStartTime = localStorage.getItem("startTime");
     return storedStartTime ? parseInt(storedStartTime, 10) : Date.now();
@@ -23,7 +25,6 @@ export const Timer = () => {
   useEffect(() => {
     if (timeData) {
       const serverTime = new Date(timeData.startTime).getTime();
-      console.log(serverTime);
       // localStorage에 startTime이 없을 경우에만 서버 시간으로 설정
       if (!localStorage.getItem("startTime")) {
         localStorage.setItem("startTime", serverTime.toString());
@@ -31,6 +32,7 @@ export const Timer = () => {
       }
     }
   }, [timeData]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
@@ -43,6 +45,13 @@ export const Timer = () => {
   const timeLeft = Math.max(0, startTime + 5 * 60000 - currentTime);
   const minutesLeft = Math.floor(timeLeft / 60000);
   const secondsLeft = Math.floor((timeLeft % 60000) / 1000);
+  useEffect(() => {
+    if (timeLeft === 0) {
+      localStorage.removeItem("startTime");
+      alert("5분동안 최종 예약이 이루어지지 않아 Home으로 돌아갑니다.");
+      navigate("/");
+    }
+  }, [timeLeft]);
 
   return (
     <TimerContainer>
@@ -51,5 +60,11 @@ export const Timer = () => {
   );
 };
 const TimerContainer = styled.div`
-  font-size: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  font-size: 30px;
+  color: #ffffff;
 `;

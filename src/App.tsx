@@ -42,7 +42,7 @@ const router = createBrowserRouter([
         element: <MovieDetail />,
       },
       {
-        path: "/payment",
+        path: "/payment/:id",
         element: <Payment />,
       },
     ],

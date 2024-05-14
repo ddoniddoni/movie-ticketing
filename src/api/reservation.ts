@@ -11,6 +11,11 @@ export interface GetSeatsParams {
   theaterId: number;
 }
 
+export interface CompleteReserveData {
+  id: number;
+  userId: string | null;
+}
+
 export const getSeat = async (params: GetSeatsParams) => {
   const { scheduleId, theaterId } = params;
   const { data } = await axios.get(
@@ -40,4 +45,12 @@ export const getMovieAndDate = async (movieId: string | undefined) => {
   return data;
 };
 
-// export const reserveSeat = async ()
+export const completeReserve = async (
+  completeReserveData: CompleteReserveData
+) => {
+  const { data } = await axios.post(
+    "http://localhost:4000/api/reservations/completeReservation",
+    completeReserveData
+  );
+  return data;
+};

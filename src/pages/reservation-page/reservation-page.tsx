@@ -47,6 +47,7 @@ interface Schedule {
 }
 
 export const ReservationPage = () => {
+  const { user } = useUserStore();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const movieId = useParams().id;
@@ -66,7 +67,7 @@ export const ReservationPage = () => {
       queryClient.invalidateQueries({ queryKey: ["getSeats"] });
       setShowModal(false);
       alert(data["message"]);
-      navigate("/payment");
+      navigate(`/payment/${user}`);
     },
     onError: (data) => {
       alert(data["message"]);
@@ -104,7 +105,6 @@ export const ReservationPage = () => {
     if (seatsData) {
       setSeats(seatsData);
     }
-    console.log(seats);
   }, [seatsData]);
 
   const handleTheaterClick = (schedule: Schedule) => {
@@ -287,7 +287,7 @@ const Seat = styled.div<{ $SeatProps?: string }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: ${(props) => (props.$SeatProps === "A" ? "pointer" : "not-allowed")};
   transition: transform 0.2s;
   border-radius: 5px;
   &:hover {

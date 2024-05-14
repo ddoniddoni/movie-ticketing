@@ -20,6 +20,7 @@ export const Layout = () => {
     <Container>
       <Wrapper>
         <HomeButton to={"/"}>Home</HomeButton>
+        <PaymentButton to={`/payment/${user}`}>Payment</PaymentButton>
         <MyPageButton to={`/my-page/${user}`}>MyPage</MyPageButton>
         <ThemeButton onClick={toggleTheme}>
           {theme === "Light" ? "Dark" : "Light"}
@@ -52,7 +53,7 @@ const Wrapper = styled.div`
   color: ${(props) => props.theme.color};
 `;
 
-const HomeButton = styled(Link)`
+const PaymentButton = styled(Link)`
   position: absolute;
   display: flex;
   justify-content: center;
@@ -61,6 +62,28 @@ const HomeButton = styled(Link)`
   height: 60px;
   right: 40px;
   bottom: 280px;
+  border-radius: 50%;
+  border: none;
+  background-color: ${(props) => props.theme.color};
+  color: ${(props) => props.theme.background};
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const HomeButton = styled(Link)`
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  right: 40px;
+  bottom: 360px;
   border-radius: 50%;
   border: none;
   background-color: ${(props) => props.theme.color};
